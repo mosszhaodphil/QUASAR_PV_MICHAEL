@@ -302,26 +302,32 @@ if [ ! -z $pvcorr ]; then
 	echo "Extracting PVE from QUASAR data"
 	
         # up sample the T1 image
-	${FSLDIR}/bin/flirt -in calib/T1t -out T1highres -applyisoxfm 1 -ref calib/T1t
-	${FSLDIR}/bin/flirt -in calib/M0t -out PDhighres -applyisoxfm 1 -ref calib/M0t
+	${FSLDIR}/bin/flirt -in calib/T1t -out T1highres -applyisoxfm 1 -ref calib/T1t # now T1highres is the up sampled T1 map
+	${FSLDIR}/bin/flirt -in calib/M0t -out PDhighres -applyisoxfm 1 -ref calib/M0t # now PDhighres is the up sampled M0 tisue map
 	
         # Segmentation with FAST (no bias field as this T1 image is not affected by it)
 	${FSLDIR}/bin/fast -N -p T1highres # -s 2 PDhighres T1highres
+    # Output from this command:
+    # 0: CSF probalility maps
+    # 1: White matter probalility maps
+    # 2: Grey matter probalility maps
+    # T1highres_pveseg: segmentation results. Intensity: 1: CSF; 2: White matter; 3: Grey matter
+
 	
         # downsample the PVE
-	${FSLDIR}/bin/applywarp -i T1highres_pve_2 -r calib/T1t -o pvgm -s --interp=trilinear
-	${FSLDIR}/bin/applywarp -i T1highres_pve_1 -r calib/T1t -o pvwm -s --interp=trilinear
+	${FSLDIR}/bin/applywarp -i T1highres_pve_2 -r calib/T1t -o pvgm -s --interp=trilinear # trilinear interpolation is 3D interpolation
+	${FSLDIR}/bin/applywarp -i T1highres_pve_1 -r calib/T1t -o pvwm -s --interp=trilinear # trilinear interpolation is 3D interpolation
         #${FSLDIR}/bin/applywarp -i T1highres_pve_2 -r calib/T1t -o pvcsf -s --interp=trilinear #not currently used but here for future use
-	pvgm=pvgm
-	pvwm=pvwm
+	pvgm=pvgm # grey matter partial volume probability map
+	pvwm=pvwm # white matter partial volume probability map
     fi
     
 #if [ ! -z $pvgm ] & [ ! -z $pvwm ]; then
     # general tidying up of PVE images
-    ${FSLDIR}/bin/fslmaths $pvgm -thr 0.1 -min 1 pvgm
-    ${FSLDIR}/bin/fslmaths $pvwm -thr 0.1 -min 1 pvwm
-    ${FSLDIR}/bin/fslmaths pvgm -bin gm_mask
-    ${FSLDIR}/bin/fslmaths pvwm -bin wm_mask
+    ${FSLDIR}/bin/fslmaths $pvgm -thr 0.1 -min 1 pvgm # threshold at 0.1 and take minumim at 1
+    ${FSLDIR}/bin/fslmaths $pvwm -thr 0.1 -min 1 pvwm # threshold at 0.1 and take minumim at 1
+    ${FSLDIR}/bin/fslmaths pvgm -bin gm_mask # use current image to binarise, now gm_mask is binary
+    ${FSLDIR}/bin/fslmaths pvwm -bin wm_mask # use current image to binarise, now wm_mask is binary
 
     #save the PVE and masks for future reference
     ${FSLDIR}/bin/imcp pvgm $outdir/pvgm
