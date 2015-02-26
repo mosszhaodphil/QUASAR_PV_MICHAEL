@@ -338,7 +338,7 @@ if [ ! -z $pvcorr ]; then
 fi
 
 
-if [ 1 -eq 0 ]; then
+# if [ 1 -eq 0 ]; then
 
 ### --- Analysis ---
 if [ -z $mfree ]; then
@@ -491,7 +491,7 @@ fslmaths asl_nocrush -sub asl_tissue asl_blood
     imcp $tempdir/aBV $outdir/aCBV
 fi
 
-fi # end of debugging if
+# fi # end of debugging if
 
 # clearup
 cd "$stdir" # make sure we are back where we started
