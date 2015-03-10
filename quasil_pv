@@ -361,6 +361,9 @@ echo "Begin model-based analysis"
     
     echo "--usecalib ">>options.txt
 
+    # save model fit results
+    echo "--save-model-fit ">>options.txt
+
     if [ -z $fixt1 ]; then
 	t1sp=I
 	if [ ! -z $infertau ]; then
